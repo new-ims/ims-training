@@ -1,0 +1,38 @@
+:host {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.5rem;
+  width: min(100%, 70rem);
+  margin: 0 auto;
+}
+
+.form,
+.model {
+  min-width: 0;
+  padding: 1.75rem;
+  border: 1px solid #e0e6ef;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 0.5rem 1.5rem rgb(28 43 68 / 6%);
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.model {
+  background: #f9fbfe;
+}
+
+@media (max-width: 680px) {
+  :host {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form,
+  .model {
+    padding: 1.25rem;
+  }
+}

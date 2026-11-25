@@ -1,1 +1,69 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  font-family: Inter, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f3f6fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 3rem 1.5rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+label {
+  color: #34425a;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input,
+select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #cbd4e1;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+input:focus,
+select:focus {
+  border-color: #4677d5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(70 119 213 / 16%);
+}
+
+pre {
+  margin: 0;
+  padding: 1.25rem;
+  overflow: auto;
+  border: 1px solid #27344a;
+  border-radius: 0.6rem;
+  background: #172033;
+  color: #e5edfc;
+  font: 0.9rem/1.6 "Cascadia Code", Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 680px) {
+  body {
+    padding: 1.5rem 1rem;
+  }
+}

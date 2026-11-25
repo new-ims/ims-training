@@ -1,0 +1,24 @@
+<div class="form">
+  <div class="field">
+    <label>Key</label>
+    <input type="text" [formField]="processForm.key">
+  </div>
+  <div class="field">
+    <label>Clerk Name</label>
+    <input type="text" [formField]="processForm.clerk">
+  </div>
+  <div class="field">
+    <label>Process Type</label>
+    <select [formField]="processForm.type">
+      <option value="holiday">Holiday</option>
+      <option value="sick-days">Sick</option>
+    </select>
+  </div>
+</div>
+
+<div class="model">
+  <pre>
+    {{data() | json}}
+  </pre>
+</div>
+
