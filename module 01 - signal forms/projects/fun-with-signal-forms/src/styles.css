@@ -9,6 +9,8 @@
   --color-error: #dc2626;
   --color-error-surface: #fff1f2;
   --color-error-focus-ring: rgb(220 38 38 / 14%);
+  --color-disabled: #64748b;
+  --color-disabled-surface: #e2e8f0;
   --color-code-border: #27344a;
   --color-code-text: #e5edfc;
   --font-family-base: Inter, "Segoe UI", sans-serif;
@@ -22,6 +24,7 @@
   --radius-control: 0.5rem;
   --radius-code: 0.6rem;
   --focus-ring-width: 3px;
+  --opacity-disabled: 0.6;
 
   color-scheme: light;
   font-family: var(--font-family-base);
@@ -85,6 +88,14 @@ select {
   &.invalid:focus {
     border-color: var(--color-error);
     box-shadow: 0 0 var(--focus-ring-width) var(--color-error-focus-ring);
+  }
+
+  &:disabled {
+    border-color: var(--color-control-border);
+    background: var(--color-disabled-surface);
+    color: var(--color-disabled);
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
   }
 }
 

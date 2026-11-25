@@ -1,27 +1,5 @@
 <div class="form">
   <div class="field">
-    <label>Key</label>
-    <input type="text" [formField]="processForm.key" />
-    @if (processForm.key().touched()) {
-      @for (err of processForm.key().errors(); track err.kind) {
-        <div class="error">
-          {{ err.message }}
-        </div>
-      }
-    }
-  </div>
-  <div class="field">
-    <label>Clerk Name</label>
-    <input type="text" [formField]="processForm.clerk" />
-    @if (processForm.clerk().touched()) {
-      @for (err of processForm.clerk().errors(); track err.kind) {
-        <div class="error">
-          {{ err.message }}
-        </div>
-      }
-    }
-  </div>
-  <div class="field">
     <label>Process Type</label>
     <select [formField]="processForm.type">
       <option value="holiday">Holiday</option>
@@ -35,6 +13,30 @@
       }
     }
   </div>
+  <div class="field">
+    <label>Key</label>
+    <input type="text" [formField]="processForm.key" />
+    @if (processForm.key().touched()) {
+      @for (err of processForm.key().errors(); track err.kind) {
+        <div class="error">
+          {{ err.message }}
+        </div>
+      }
+    }
+  </div>
+  @if (!processForm.clerk().hidden()) {
+    <div class="field">
+      <label>Clerk Name</label>
+      <input type="text" [formField]="processForm.clerk" />
+      @if (processForm.clerk().touched()) {
+        @for (err of processForm.clerk().errors(); track err.kind) {
+          <div class="error">
+            {{ err.message }}
+          </div>
+        }
+      }
+    </div>
+  }
 </div>
 
 <div class="model">

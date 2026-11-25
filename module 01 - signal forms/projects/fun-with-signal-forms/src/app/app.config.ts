@@ -7,7 +7,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideSignalFormsConfig({
       classes: {
-        'invalid': ctx => ctx.state().touched() && ctx.state().invalid()
+        'invalid': ctx => ctx.state().touched() && ctx.state().invalid(), 
+        'hidden': ctx => ctx.state().hidden()
       }
     })
   ]
