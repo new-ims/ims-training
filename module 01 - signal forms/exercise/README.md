@@ -1,0 +1,445 @@
+# Exercise — Signal Forms: Insurance Claim Intake
+
+In this exercise you will build a small **insurance claim intake form** using Angular **Signal Forms** (`@angular/forms/signals`). You will practice everything demonstrated in the `fun-with-signal-forms` project:
+
+1. Creating a data model
+2. Creating a basic form and connecting fields to it
+3. Using the `required`, `min`, `max` (and `minLength`) validators
+4. Adding custom messages to validators
+5. Adding conditions to validators (`when` + dynamic validator parameters)
+6. Setting global CSS classes by state condition
+7. Displaying errors and "required" hints
+8. The `hidden` function
+
+### The app you will build
+
+A claim intake screen for clerks:
+
+| Field | Rules |
+|---|---|
+| **Claim Type** | `car`, `home` or `travel` — a `<select>` |
+| **Policy Number** | Always required. Minimum length depends on the claim type: `car` → 8 chars, otherwise → 6 chars |
+| **Description** | Required only for `car` claims |
+| **Estimated Amount** | At least 100 ₪. Maximum depends on the claim type: `car` → 50,000, `home` → 200,000, `travel` → 20,000 |
+| **Agent Name** | Only relevant for big claims: *hidden* while the amount is ≤ 10,000 (or invalid), and *required* when it is shown |
+
+Next to the form, display the live model as JSON so you can watch the signal update as you type.
+
+---
+
+## Step 0 — Setup
+
+Create a new standalone Angular application (Angular 22.1+ is required for signal forms):
+
+```bash
+ng new claim-intake --style=css --ssr=false
+cd claim-intake
+ng serve
+```
+
+To keep the focus on forms rather than styling, copy the stylesheet from the appendix at the bottom of this document into `src/styles.css`.
+
+---
+
+## Step 1 — Create the data model
+
+Create `src/app/models/claim.model.ts`.
+
+1. Define the list of claim types as a `const` array and derive a union type from it:
+
+   ```ts
+   export const CLAIM_TYPES = ['car', 'home', 'travel'] as const;
+   export type ClaimType = typeof CLAIM_TYPES[number];
+   ```
+
+2. Define a readonly `Claim` interface with these fields:
+   - `type: ClaimType`
+   - `policyNumber: string`
+   - `description: string`
+   - `estimatedAmount: number`
+   - `agentName: string`
+
+3. Export an `EMPTY_CLAIM: Claim` constant to use as the initial form value (`type: 'car'`, empty strings, amount `0`).
+
+> **Why readonly?** Signal forms treat the model as immutable data inside a signal — the form writes new objects into the signal rather than mutating the existing one.
+
+---
+
+## Step 2 — Create a basic form and connect the fields
+
+Open `src/app/app.ts`.
+
+1. Create a signal holding the model:
+
+   ```ts
+   readonly data = signal(EMPTY_CLAIM);
+   ```
+
+2. Create the form from the signal. For now, pass no schema logic:
+
+   ```ts
+   import { form, FormField } from '@angular/forms/signals';
+
+   readonly claimForm = form(this.data);
+   ```
+
+3. Add `FormField` (and `JsonPipe`) to the component's `imports` array.
+
+4. In `app.html`, build the form. Bind every control with the `[formField]` directive. The structure for one field:
+
+   ```html
+   <div class="form">
+     <div class="field">
+       <label>Claim Type</label>
+       <select [formField]="claimForm.type">
+         <option value="car">Car</option>
+         <option value="home">Home</option>
+         <option value="travel">Travel</option>
+       </select>
+     </div>
+     <!-- ... policyNumber (text), description (text), -->
+     <!-- estimatedAmount (number), agentName (text) ... -->
+   </div>
+   ```
+
+   Use `<input type="number">` for `estimatedAmount` — signal forms will keep it a `number` in the model.
+
+5. Add the live model view next to the form:
+
+   ```html
+   <div class="model">
+     <pre>{{ data() | json }}</pre>
+   </div>
+   ```
+
+✅ **Checkpoint:** Type into any field and watch the JSON update immediately. Notice you never wrote an event handler — the two-way sync is the form's job.
+
+---
+
+## Step 3 — Add validators: `required`, `min`, `max`
+
+Validation logic lives in the **schema function**, the second argument of `form(...)`. It receives a `path` object that mirrors your model:
+
+```ts
+import { form, FormField, required, min, max, minLength } from '@angular/forms/signals';
+
+readonly claimForm = form(this.data, path => {
+  required(path.policyNumber);
+  required(path.description);
+  min(path.estimatedAmount, 100);
+  max(path.estimatedAmount, 50_000);
+  minLength(path.policyNumber, 8);
+});
+```
+
+Add the rules above.
+
+✅ **Checkpoint:** Open the JSON panel and the DevTools — nothing visible changes yet in the UI (we haven't rendered errors), but check the field state in the console or via `claimForm.policyNumber().valid()`. We'll surface the errors in Step 7… but first, let's make them worth showing.
+
+---
+
+## Step 4 — Add messages to the validators
+
+Each validator accepts a config object with a `message`. A message can be a plain string **or** a function of the context:
+
+```ts
+required(path.policyNumber, { message: 'Policy number is required' });
+min(path.estimatedAmount, 100, { message: 'A claim must be at least 100 ₪' });
+```
+
+1. Add a static message to every validator you wrote in Step 3.
+2. For the `max` validator, use a **dynamic message** that includes the limit:
+
+   ```ts
+   max(path.estimatedAmount, 50_000, {
+     message: ctx => `Amount may not exceed ${50_000} ₪`
+   });
+   ```
+
+   (It looks silly with a constant — it will make sense in the next step when the limit becomes dynamic.)
+
+---
+
+## Step 5 — Add conditions to the validators
+
+Two different mechanisms, practice both:
+
+### 5a. Conditional *activation* with `when`
+
+`description` should be required **only for car claims**:
+
+```ts
+required(path.description, {
+  message: 'A description is required for car claims',
+  when: ctx => ctx.valueOf(path.type) === 'car'
+});
+```
+
+`ctx.valueOf(somePath)` reads the current value of *any* field in the form — this is how rules react to other fields.
+
+### 5b. Dynamic *parameters*
+
+The minimum length of `policyNumber` and the maximum amount both depend on the claim type. Instead of a constant, pass a function:
+
+```ts
+minLength(path.policyNumber,
+  ctx => ctx.valueOf(path.type) === 'car' ? 8 : 6,
+  { message: ctx => `Policy number must be at least ${
+      ctx.valueOf(path.type) === 'car' ? 8 : 6} characters long` });
+```
+
+Now do the same for `max` on `estimatedAmount`:
+- `car` → 50,000, `home` → 200,000, `travel` → 20,000
+- Make the message report the actual limit for the currently selected type.
+
+> **Tip:** extract a small helper like `maxFor(type: ClaimType): number` to avoid repeating the mapping in the validator and in the message.
+
+✅ **Checkpoint:** (After Step 7 you'll see it visually, but you can verify now via the JSON/state.) Switch the type between `car` and `travel` and confirm the same amount flips between valid and invalid.
+
+---
+
+## Step 6 — Set global CSS classes by state condition
+
+You could bind `[class.invalid]` on every single control — or declare it **once for the entire application**.
+
+In `src/app/app.config.ts`:
+
+```ts
+import { provideSignalFormsConfig } from '@angular/forms/signals';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideSignalFormsConfig({
+      classes: {
+        'invalid': ctx => ctx.state().touched() && ctx.state().invalid(),
+      }
+    })
+  ]
+};
+```
+
+Every `[formField]`-bound control now automatically gets the `invalid` class when its condition is true. The stylesheet in the appendix already styles `input.invalid, select.invalid` with a red border.
+
+✅ **Checkpoint:** Focus the policy number field, leave it empty, and click elsewhere (making it *touched*) — the control turns red. Note it is **not** red before you touch it.
+
+---
+
+## Step 7 — Display errors and required hints
+
+### 7a. Required hint (`*`)
+
+The form itself knows whether a field is currently required — including conditionally required fields! Use `required()` on the field state:
+
+```html
+<label>
+  Policy Number
+  @if (claimForm.policyNumber().required()) {
+    <span class="required">*</span>
+  }
+</label>
+```
+
+Add the hint to **every** label.
+
+✅ **Checkpoint:** Switch the claim type between `car` and `home` — the `*` on *Description* appears and disappears by itself. You never duplicated the condition in the template.
+
+### 7b. Error messages
+
+Each field state exposes an `errors()` signal — a list of `{ kind, message, ... }` objects. Show them only once the field was touched:
+
+```html
+@if (claimForm.policyNumber().touched()) {
+  @for (err of claimForm.policyNumber().errors(); track err.kind) {
+    <div class="error">{{ err.message }}</div>
+  }
+}
+```
+
+Add the error block under every field.
+
+✅ **Checkpoint:**
+- Empty policy number → *"Policy number is required"*.
+- Type 3 characters as a `car` claim → *"…at least 8 characters…"*; switch type to `travel` → the message changes to *"…at least 6 characters…"* live.
+- Enter 100,000 for a `travel` claim → the max message shows 20,000; switch to `home` → the error disappears.
+
+---
+
+## Step 8 — The `hidden` function
+
+Small claims are processed without an agent. Hide `agentName` while the estimated amount is not yet valid or is ≤ 10,000.
+
+1. In the schema:
+
+   ```ts
+   import { hidden } from '@angular/forms/signals';
+
+   hidden(path.agentName, {
+     when: ctx => ctx.stateOf(path.estimatedAmount).invalid()
+               || ctx.valueOf(path.estimatedAmount) <= 10_000
+   });
+   ```
+
+   Note the two context helpers: `ctx.valueOf(...)` reads a field's **value**, `ctx.stateOf(...)` reads its **state** (valid, touched, …).
+
+2. A hidden field is skipped by validation automatically — so you can safely also declare:
+
+   ```ts
+   required(path.agentName, { message: 'Big claims must have an assigned agent' });
+   ```
+
+3. In the template, wrap the whole agent field block:
+
+   ```html
+   @if (!claimForm.agentName().hidden()) {
+     <div class="field">
+       <!-- label + input + errors as usual -->
+     </div>
+   }
+   ```
+
+✅ **Checkpoint:**
+- Amount 5,000 → no agent field.
+- Amount 15,000 → the agent field appears, with a `*` hint, and shows a required error once touched.
+- Amount 300,000 on a `home` claim (invalid — over max) → the agent field disappears again, because the amount is invalid.
+
+---
+
+## Done! Final sanity walkthrough
+
+Play the role of a clerk:
+
+1. Choose **Travel**, policy number `ABC12` → too short (needs 6). Add a character → valid.
+2. Switch to **Car** → the same policy number becomes invalid again (needs 8), and *Description* becomes required (watch the `*`).
+3. Enter amount `50` → min error. Enter `25000` → max error for travel… but fine for car. And since it's above 10,000 — the **Agent Name** field has appeared and demands a value.
+4. All fields green, JSON panel shows a complete, typed `Claim` object. 🎉
+
+## Bonus (if you have time)
+
+- Add a `disabled` rule: make `policyNumber` **readonly** when the type is `travel` (`readonly(path.policyNumber, ...)` — same pattern as `hidden`).
+- Add a second entry to the global `classes` config: `'hidden': ctx => ctx.state().hidden()` and a matching CSS rule, as an alternative to the `@if` in the template.
+- Add a submit button that is disabled while `claimForm().invalid()`.
+
+---
+
+## Appendix — `src/styles.css`
+
+```css
+:root {
+  --color-canvas: #f3f6fb;
+  --color-text: #172033;
+  --color-label: #34425a;
+  --color-surface: #fff;
+  --color-control-border: #cbd4e1;
+  --color-focus: #4677d5;
+  --color-focus-ring: rgb(70 119 213 / 16%);
+  --color-error: #dc2626;
+  --color-error-surface: #fff1f2;
+  --color-error-focus-ring: rgb(220 38 38 / 14%);
+  --font-family-base: Inter, "Segoe UI", sans-serif;
+  --font-family-code: "Cascadia Code", Consolas, monospace;
+  --font-size-small: 0.9rem;
+
+  color-scheme: light;
+  font-family: var(--font-family-base);
+  color: var(--color-text);
+  background: var(--color-canvas);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 3rem 1.5rem;
+}
+
+app-root {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.5rem;
+  width: min(100%, 70rem);
+  margin: 0 auto;
+}
+
+.form,
+.model {
+  min-width: 0;
+  padding: 1.75rem;
+  border: 1px solid #e0e6ef;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 0.5rem 1.5rem rgb(28 43 68 / 6%);
+}
+
+.form { display: grid; gap: 1.25rem; }
+.model { background: #f9fbfe; }
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+
+  label {
+    color: var(--color-label);
+    font-size: var(--font-size-small);
+    font-weight: 600;
+  }
+
+  .required { color: var(--color-error); }
+
+  .error {
+    color: var(--color-error);
+    font-size: var(--font-size-small);
+    margin-top: 0.25rem;
+  }
+}
+
+input,
+select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:focus {
+    border-color: var(--color-focus);
+    outline: none;
+    box-shadow: 0 0 3px var(--color-focus-ring);
+  }
+
+  &.invalid {
+    border-color: var(--color-error);
+    background: var(--color-error-surface);
+  }
+
+  &.invalid:focus {
+    border-color: var(--color-error);
+    box-shadow: 0 0 3px var(--color-error-focus-ring);
+  }
+}
+
+pre {
+  margin: 0;
+  padding: 1.25rem;
+  overflow: auto;
+  border-radius: 0.6rem;
+  background: var(--color-text);
+  color: #e5edfc;
+  font: var(--font-size-small) / 1.6 var(--font-family-code);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 680px) {
+  body { padding: 1.5rem 1rem; }
+  app-root { grid-template-columns: minmax(0, 1fr); }
+  .form, .model { padding: 1.25rem; }
+}
+```
