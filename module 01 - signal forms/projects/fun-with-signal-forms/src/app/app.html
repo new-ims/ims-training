@@ -1,6 +1,11 @@
 <div class="form">
   <div class="field">
-    <label>Process Type</label>
+    <label
+      >Process Type
+      @if (processForm.type().required()) {
+        <span class="required">*</span>
+      }
+    </label>
     <select [formField]="processForm.type">
       <option value="holiday">Holiday</option>
       <option value="sick-days">Sick</option>
@@ -14,7 +19,12 @@
     }
   </div>
   <div class="field">
-    <label>Key</label>
+    <label
+      >Key
+      @if (processForm.key().required()) {
+        <span class="required">*</span>
+      }
+    </label>
     <input type="text" [formField]="processForm.key" />
     @if (processForm.key().touched()) {
       @for (err of processForm.key().errors(); track err.kind) {
@@ -26,7 +36,12 @@
   </div>
   @if (!processForm.clerk().hidden()) {
     <div class="field">
-      <label>Clerk Name</label>
+      <label
+        >Clerk Name
+        @if (processForm.clerk().required()) {
+          <span class="required">*</span>
+        }
+      </label>
       <input type="text" [formField]="processForm.clerk" />
       @if (processForm.clerk().touched()) {
         @for (err of processForm.clerk().errors(); track err.kind) {
