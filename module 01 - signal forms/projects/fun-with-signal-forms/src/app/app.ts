@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { EMPTY_PRCESS } from './models/process.model';
+import { EMPTY_PRCESS, SAMPLE_PROCESS } from './models/process.model';
 import {
   apply,
   applyEach,
   disabled,
   form,
   FormField,
+  FormRoot,
   hidden,
   max,
   min,
@@ -21,14 +22,18 @@ import { claimSchema } from './validators/claim.schema';
 
 @Component({
   selector: 'app-root',
-  imports: [JsonPipe, FormField],
+  imports: [JsonPipe, FormField, FormRoot],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App {
-  readonly data = signal(EMPTY_PRCESS);
+  readonly data = signal(SAMPLE_PROCESS);
 
   readonly processForm = form(this.data, (path) => {
+    disabled(path, {
+      when: ctx => ctx.state.submitting()
+    });
+
     required(path.clerk, { message: 'Clerk is required' });
     required(path.key, {
       message: 'Key is required',
@@ -49,6 +54,35 @@ export class App {
     apply(path.primaryClaim, claimSchema);
     apply(path.secondaryClaim, claimSchema);
     applyEach(path.history, claimSchema);
+  }, {
+    submission: {
+      action: async (fieldTree) => {
+        const val = fieldTree().value();
+        console.log('Submitting', val);
+        await new Promise(res => setTimeout(res, 5000));
+
+        if (val.key === '1234567890') {
+          return [
+            {
+              kind: 'key-already-taken', 
+              message: 'The key is already taken', 
+              fieldTree: fieldTree.key
+            }
+          ]
+        }
+
+        return null;
+      },
+      onInvalid: (fieldTree) => {
+        console.log('Form is invalid');
+        const errors = fieldTree().errorSummary();
+        const firstError = errors[0];
+        if (firstError) {
+          firstError.fieldTree().focusBoundControl();
+        }
+
+      } 
+    }
   });
 
   constructor() {}

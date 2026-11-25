@@ -1,4 +1,4 @@
-<div class="form">
+<form class="form" [formRoot]="processForm">
   <div class="field">
     <label
       >Process Type
@@ -85,7 +85,163 @@
       }
     }
   </div>
-</div>
+
+  <fieldset class="claim">
+    <legend>Primary Claim</legend>
+    <div class="field">
+      <label for="primary-claim-num">
+        Claim Number
+        @if (processForm.primaryClaim.claimNum().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <input id="primary-claim-num" type="number" [formField]="processForm.primaryClaim.claimNum" />
+      @if (processForm.primaryClaim.claimNum().touched()) {
+        @for (err of processForm.primaryClaim.claimNum().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="primary-claim-description">
+        Description
+        @if (processForm.primaryClaim.description().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <textarea id="primary-claim-description" [formField]="processForm.primaryClaim.description" rows="4"></textarea>
+      @if (processForm.primaryClaim.description().touched()) {
+        @for (err of processForm.primaryClaim.description().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="primary-claim-summary">
+        Summary
+        @if (processForm.primaryClaim.summary().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <textarea id="primary-claim-summary" [formField]="processForm.primaryClaim.summary" rows="3"></textarea>
+      @if (processForm.primaryClaim.summary().touched()) {
+        @for (err of processForm.primaryClaim.summary().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="primary-claim-start">
+        Start Date
+        @if (processForm.primaryClaim.startDate().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <input id="primary-claim-start" type="date" [formField]="processForm.primaryClaim.startDate" />
+      @if (processForm.primaryClaim.startDate().touched()) {
+        @for (err of processForm.primaryClaim.startDate().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="primary-claim-end">
+        End Date
+        @if (processForm.primaryClaim.endDate().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <input id="primary-claim-end" type="date" [formField]="processForm.primaryClaim.endDate" />
+      @if (processForm.primaryClaim.endDate().touched()) {
+        @for (err of processForm.primaryClaim.endDate().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+  </fieldset>
+
+  <fieldset class="claim">
+    <legend>Secondary Claim</legend>
+    <div class="field">
+      <label for="secondary-claim-num">
+        Claim Number
+        @if (processForm.secondaryClaim.claimNum().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <input id="secondary-claim-num" type="number" [formField]="processForm.secondaryClaim.claimNum" />
+      @if (processForm.secondaryClaim.claimNum().touched()) {
+        @for (err of processForm.secondaryClaim.claimNum().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="secondary-claim-description">
+        Description
+        @if (processForm.secondaryClaim.description().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <textarea id="secondary-claim-description" [formField]="processForm.secondaryClaim.description" rows="4"></textarea>
+      @if (processForm.secondaryClaim.description().touched()) {
+        @for (err of processForm.secondaryClaim.description().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="secondary-claim-summary">
+        Summary
+        @if (processForm.secondaryClaim.summary().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <textarea id="secondary-claim-summary" [formField]="processForm.secondaryClaim.summary" rows="3"></textarea>
+      @if (processForm.secondaryClaim.summary().touched()) {
+        @for (err of processForm.secondaryClaim.summary().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="secondary-claim-start">
+        Start Date
+        @if (processForm.secondaryClaim.startDate().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <input id="secondary-claim-start" type="date" [formField]="processForm.secondaryClaim.startDate" />
+      @if (processForm.secondaryClaim.startDate().touched()) {
+        @for (err of processForm.secondaryClaim.startDate().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+    <div class="field">
+      <label for="secondary-claim-end">
+        End Date
+        @if (processForm.secondaryClaim.endDate().required()) {
+          <span class="required">*</span>
+        }
+      </label>
+      <input id="secondary-claim-end" type="date" [formField]="processForm.secondaryClaim.endDate" />
+      @if (processForm.secondaryClaim.endDate().touched()) {
+        @for (err of processForm.secondaryClaim.endDate().errors(); track err.kind) {
+          <div class="error">{{ err.message }}</div>
+        }
+      }
+    </div>
+  </fieldset>
+
+  <button type="submit">
+    @if(processForm().submitting()) {
+      Submitting...
+    } @else {
+      Go
+    }
+  </button>
+</form>
 
 <div class="model">
   <pre>

@@ -38,3 +38,27 @@ export const EMPTY_PRCESS: Process = {
     history: [],
 }
 
+export const SAMPLE_PROCESS: Process =     {
+  "clerk": "john",
+  "key": "1234567890",
+  "type": "holiday",
+  "favoriteColors": [],
+  "description": "this is more then enough to submit the form alreay please common",
+  "summary": "this is a short summary that is enough",
+  "primaryClaim": {
+    "claimNum": 8,
+    "description": "",
+    "summary": "",
+    "startDate": "2026-11-01",
+    "endDate": "2026-11-03"
+  },
+  "secondaryClaim": {
+    "claimNum": 8,
+    "description": "",
+    "summary": "",
+    "startDate": "2026-11-17",
+    "endDate": "2026-11-26"
+  },
+  "history": []
+}
+

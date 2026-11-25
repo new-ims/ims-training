@@ -22,6 +22,22 @@
   gap: 1.25rem;
 }
 
+.claim {
+  display: grid;
+  min-width: 0;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+
+  legend {
+    padding: 0 0.5rem;
+    color: var(--color-label);
+    font-weight: 600;
+  }
+}
+
 .model {
   background: #f9fbfe;
 }
