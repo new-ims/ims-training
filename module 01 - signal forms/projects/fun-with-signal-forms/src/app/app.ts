@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { EMPTY_PRCESS } from './models/process.model';
-import { form, FormField } from '@angular/forms/signals';
+import { form, FormField, required } from '@angular/forms/signals';
 import { JsonPipe } from '@angular/common';
 
 @Component({
@@ -12,7 +12,10 @@ import { JsonPipe } from '@angular/common';
 export class App {
   readonly data = signal(EMPTY_PRCESS);
 
-  readonly processForm = form(this.data);
+  readonly processForm = form(this.data, path => {
+    required(path.clerk);
+    required(path.key);
+  });
 
   constructor() {
   }
