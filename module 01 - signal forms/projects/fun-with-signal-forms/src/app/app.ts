@@ -13,10 +13,11 @@ export class App {
   readonly data = signal(EMPTY_PRCESS);
 
   readonly processForm = form(this.data, path => {
-    required(path.clerk);
-    required(path.key);
+    required(path.clerk, {message: 'Clerk is required'});
+    required(path.key, {message: 'Key is required'});
   });
 
   constructor() {
+
   }
 }

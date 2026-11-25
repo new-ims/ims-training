@@ -49,6 +49,12 @@ body {
     font-size: var(--font-size-small);
     font-weight: 600;
   }
+
+  .error {
+    color: var(--color-error);
+    font-size: var(--font-size-small);
+    margin-top: 0.25rem;
+  }
 }
 
 input,

@@ -1,11 +1,25 @@
 <div class="form">
   <div class="field">
     <label>Key</label>
-    <input type="text" [formField]="processForm.key">
+    <input type="text" [formField]="processForm.key" />
+    @if (processForm.key().touched()) {
+      @for (err of processForm.key().errors(); track err.kind) {
+        <div class="error">
+          {{ err.message }}
+        </div>
+      }
+    }
   </div>
   <div class="field">
     <label>Clerk Name</label>
-    <input type="text" [formField]="processForm.clerk">
+    <input type="text" [formField]="processForm.clerk" />
+    @if (processForm.clerk().touched()) {
+      @for (err of processForm.clerk().errors(); track err.kind) {
+        <div class="error">
+          {{ err.message }}
+        </div>
+      }
+    }
   </div>
   <div class="field">
     <label>Process Type</label>
@@ -13,12 +27,18 @@
       <option value="holiday">Holiday</option>
       <option value="sick-days">Sick</option>
     </select>
+    @if (processForm.type().touched()) {
+      @for (err of processForm.type().errors(); track err.kind) {
+        <div class="error">
+          {{ err.message }}
+        </div>
+      }
+    }
   </div>
 </div>
 
 <div class="model">
   <pre>
-    {{data() | json}}
+    {{ data() | json }}
   </pre>
 </div>
-
