@@ -61,6 +61,7 @@ body {
 }
 
 input,
+textarea,
 select {
   width: 100%;
   min-height: 2.75rem;
@@ -97,6 +98,10 @@ select {
     opacity: var(--opacity-disabled);
     cursor: not-allowed;
   }
+}
+
+textarea {
+  resize: none;
 }
 
 pre {

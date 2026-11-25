@@ -10,13 +10,17 @@ export interface Process {
     readonly clerk: string;
     readonly type: ProcessType;
     readonly favoriteColors: string[];
-
+    readonly description: string;
+    readonly summary: string;
+    
 }
 
 export const EMPTY_PRCESS: Process = {
     clerk: 'john', 
     key: '', 
     type: 'holiday',
-    favoriteColors: []
+    favoriteColors: [],
+    description: '',
+    summary: ''
 }
 

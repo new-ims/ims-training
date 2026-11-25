@@ -52,6 +52,39 @@
       }
     </div>
   }
+  <div class="field">
+    <label
+      >Description
+      @if (processForm.description().required()) {
+        <span class="required">*</span>
+      }
+    </label>
+    <textarea [formField]="processForm.description" rows="4"></textarea>
+    @if (processForm.description().touched()) {
+      @for (err of processForm.description().errors(); track err.kind) {
+        <div class="error">
+          {{ err.message }}
+        </div>
+      }
+    }
+  </div>
+
+  <div class="field">
+    <label
+      >Summary
+      @if (processForm.summary().required()) {
+        <span class="required">*</span>
+      }
+    </label>
+    <textarea [formField]="processForm.summary" rows="3"></textarea>
+    @if (processForm.summary().touched()) {
+      @for (err of processForm.summary().errors(); track err.kind) {
+        <div class="error">
+          {{ err.message }}
+        </div>
+      }
+    }
+  </div>
 </div>
 
 <div class="model">
